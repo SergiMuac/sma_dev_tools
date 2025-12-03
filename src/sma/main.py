@@ -10,7 +10,7 @@ app = typer.Typer(name="sma", add_completion=True, help="Robotics Development CL
 # 2. Add commands to app
 app.command()(register)
 app.command(name="list")(list_robots)
-app.command()(deploy_command)
+app.command(name="deploy")(deploy_command)
 
 # Add the ROS2 group
 app.add_typer(ros2_app, name="ros2")
