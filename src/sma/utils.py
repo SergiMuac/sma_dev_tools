@@ -1,5 +1,6 @@
 import typer
 import tarfile
+from typing import List
 from pathlib import Path
 from fabric import Connection
 from paramiko.ssh_exception import AuthenticationException
@@ -49,3 +50,30 @@ def resolve_connection(target: str, user_opt: str = "user") -> Connection:
     else:
         # Raw IP
         return _connect_with_auth_logic(target, user_opt)
+    
+def build_ros_command(distro: str, extra_workspaces: List[str], final_cmd: str) -> str:
+    """
+    Constructs the chained source command.
+    Order: Global ROS -> Extra WS (Overlays) -> dev_ws (Active) -> Command
+    """
+    # 1. Source Global ROS
+    cmd_chain = [f"source /opt/ros/{distro}/setup.bash"]
+    
+    # 2. Source Extra Workspaces (user added)
+    for ws in extra_workspaces:
+        # We assume the user gives the root path, we append install/setup.bash
+        # Handling trailing slashes just in case
+        clean_ws = ws.rstrip("/")
+        cmd_chain.append(f"source {clean_ws}/install/setup.bash")
+    
+    # 3. Source the deploy workspace (dev_ws)
+    cmd_chain.append("source dev_ws/install/setup.bash")
+    
+    # 4. The actual command
+    cmd_chain.append(final_cmd)
+    
+    # Join with &&
+    full_command = " && ".join(cmd_chain)
+    
+    # Wrap in bash -c
+    return f"bash -c '{full_command}'"

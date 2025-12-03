@@ -25,12 +25,43 @@ class ConfigManager:
 
     def register_robot(self, name, ip, user, password=None):
         data = self.load()
-        data[name] = {"ip": ip, "user": user, "password": password}
+        # Preserve existing workspaces if re-registering
+        existing_ws = []
+        if name in data and "workspaces" in data[name]:
+            existing_ws = data[name]["workspaces"]
+            
+        data[name] = {
+            "ip": ip, 
+            "user": user, 
+            "password": password,
+            "workspaces": existing_ws # Default to empty or existing
+        }
         self.save(data)
 
     def get_robot(self, name):
         data = self.load()
         return data.get(name)
 
-# Create the singleton instance
+    # --- NEW METHODS ---
+    def add_workspace(self, robot_name, ws_path):
+        data = self.load()
+        if robot_name not in data:
+            return False
+        
+        # Ensure list exists
+        if "workspaces" not in data[robot_name]:
+            data[robot_name]["workspaces"] = []
+            
+        # Avoid duplicates
+        if ws_path not in data[robot_name]["workspaces"]:
+            data[robot_name]["workspaces"].append(ws_path)
+            self.save(data)
+        return True
+
+    def get_workspaces(self, robot_name):
+        data = self.load()
+        if robot_name in data:
+            return data[robot_name].get("workspaces", [])
+        return []
+
 config_manager = ConfigManager()
