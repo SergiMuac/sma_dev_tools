@@ -1,7 +1,10 @@
 [project]
 name = "sma-dev-tools"
 version = "0.1.0"
-description = "Add your description here"
+description = "SMA Dev Tools is a Python package designed to make life easier for robotics developers."
+authors = [
+  {name = "Sergi de las Muelas", email = "sergimuac@gmail.com"},
+] 
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
